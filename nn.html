@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Learning Classifier Sim</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #03060a;
+            /* Ultra oscuro para contraste */
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+        }
+
+        /* Contenedor principal de la simulación */
+        #neural-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* El Canvas ocupa todo, pero detrás de la imagen */
+        #neuralCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Contenedor de la Imagen Clasificada (Derecha) */
+        #classifier-result-container {
+            position: absolute;
+            right: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            pointer-events: none;
+            /* No interfiere con el canvas */
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+        }
+
+        #result-frame {
+            width: 350px;
+            height: 250px;
+            border: 2px solid #00d1ff;
+            background-color: #050a0f;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #classifier-label {
+            font-family: 'Courier New', Courier, monospace;
+            /* Fuente tipo terminal */
+            font-size: 1.8rem;
+        }
+
+        #result-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.1;
+            /* Efecto de 'procesando' inicial */
+            transition: opacity 0.3s ease-in;
+        }
+
+
+        /* Botón opcional para re-ejecutar simulación */
+        #run-button {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            padding: 15px 30px;
+            background: rgba(0, 209, 255, 0.2);
+            border: 2px solid #00d1ff;
+            color: #00d1ff;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        #run-button:hover {
+            background: rgba(0, 209, 255, 0.5);
+        }
+
+        /* Contenedor de la Imagen del Equipo (Izquierda) */
+        #equipment-container {
+            position: absolute;
+            left: 2%;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            pointer-events: none;
+            /* No interfiere con el canvas */
+        }
+
+        #equipment-image {
+            width: 250px;
+            /* Ajusta según tu imagen */
+            height: auto;
+            /* Efecto de brillo cyan sutil para integrarlo */
+            filter: drop-shadow(0 0 15px rgba(0, 209, 255, 0.6));
+            opacity: 0.8;
+        }
+
+        .equipment-label {
+            margin-top: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2rem;
+            color: #00d1ff;
+            text-shadow: 0 0 10px #00d1ff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="neural-container">
+        <div id="equipment-container">
+            <img id="equipment-image" src="./assets/transformer.png" alt="Industrial Equipment">
+            <div class="equipment-label">ASSET ID: TRB-001</div>
+        </div>
+
+        <canvas id="neuralCanvas"></canvas>
+
+        <div id="classifier-result-container">
+            <div id="result-frame">
+                <img id="classified-image" src="" alt="Cargando...">
+            </div>
+            <div id="classifier-label">Esperando...</div>
+        </div>
+
+        <button id="run-button">PERFORM PREDICTIVE CHECK</button>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN DE IMÁGENES ---
+        const DOG_IMAGE = "./assets/perro.png";
+        const CAT_IMAGE = "./assets/gato.jpg";
+
+        const canvas = document.getElementById('neuralCanvas');
+        const ctx = canvas.getContext('2d');
+        const runButton = document.getElementById('run-button');
+        const resultContainer = document.getElementById('classifier-result-container');
+        const classifiedImageEl = document.getElementById('classified-image');
+        const classifierLabelEl = document.getElementById('classifier-label');
+
+        let particles = [];
+        let pulses = [];
+        let mathParticles = [];
+        const layers = [5, 8, 8, 8, 2];
+        let isSimulating = false;
+        let currentPrediction = null;
+
+        const equations = [
+            "σ(z) = 1 / (1 + e⁻ᶻ)",        // Activación Sigmoide
+            "log₂(Fold Change)",           // Metabolómica diferencial
+            "p-value < 0.05",              // Significancia estadística
+            "m/z = (M + zH) / z",          // Relación masa-carga (MS)
+            "zᵢ = xᵢ - μ / σ",             // Estandarización (Z-score)
+            "y = Softmax(Wᵀx + b)",        // Capa de salida lineal
+            "∂L/∂W = (ŷ - y)xᵀ",           // Gradiente de error
+            "ReLU(x) = max(0, x)",         // Activación no lineal
+            "R² = 1 - (SSᵣₑₛ / SSₜₒₜ)",    // Coeficiente de determinación
+            "H(p, q) = -∑ pᵢ log(qᵢ)",     // Entropía cruzada (Loss)
+            "AUC-ROC ≈ 0.98",              // Métrica de performance
+            "VIP Score > 1.0",             // Importancia de variable en PLS-DA
+            "δⱼˡ = (wⱼₖˡ⁺¹ δₖˡ⁺¹) ⊙ σ'(zⱼˡ)", // Backpropagation (Ecuación fundamental)
+            "m/z ≈ 142.047 [C₆H₁₀O₅+H]⁺",  // Fragmento de glucosa (Metabolito)
+            "t = (x̄₁ - x̄₂) / √(s₁²/n₁ + s₂²/n₂)", // t-test de muestras independientes
+            "R(t) = e^(-λt)",          // Función de confiabilidad
+            "MTBF = 1 / λ",            // Tiempo medio entre fallos
+            "f(t) = h(t)R(t)",         // Densidad de probabilidad de fallo
+            "FFT: Xₖ = ∑ xₙ e^(-i2πkn/N)", // Transformada de Fourier (vibraciones)
+            "z(t) = x(t) * h(t)",      // Convolución de señal
+            "LSTM: fₜ = σ(Wf[hₜ₋₁, xₜ])", // Celda de memoria para series temporales
+            "Anomaly Score > τ",       // Detección de anomalías
+            "Remaining Useful Life (RUL)"
+        ];
+
+        const mouse = { x: null, y: null, radius: 100 };
+        window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
+
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            pulses = [];
+
+            const equipmentWidth = 300;
+            const availableWidth = canvas.width - equipmentWidth - 400; // 400px espacio para el clasificador
+
+            const spacingX = availableWidth / (layers.length + 1);
+
+            // El offsetX ahora empieza después del equipo
+            const offsetX = equipmentWidth + 50;
+
+            layers.forEach((count, lIndex) => {
+                const spacingY = canvas.height / (count + 1);
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        indexInLayer: i,
+                        x: offsetX + spacingX * (lIndex + 1),
+                        y: spacingY * (i + 1),
+                        baseX: offsetX + spacingX * (lIndex + 1),
+                        baseY: spacingY * (i + 1),
+                        layer: lIndex,
+                        size: 40,
+                        color: lIndex === 0 ? '#00d1ff' : (lIndex === layers.length - 1 ? '#ff4d4d' : '#f0a500')
+                    });
+                }
+            });
+            initMath();
+        }
+
+        function initMath() {
+            mathParticles = [];
+            for (let i = 0; i < 15; i++) {
+                mathParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    text: equations[Math.floor(Math.random() * equations.length)],
+                    speed: 0.2 + Math.random() * 0.3,
+                    opacity: 0.1 + Math.random() * 0.2,
+                    fontSize: 15 + Math.random() * 20 // Tamaño grande como pediste
+                });
+            }
+        }
+
+        function drawMath() {
+            mathParticles.forEach(m => {
+                ctx.font = `italic ${m.fontSize}px 'Times New Roman'`;
+                ctx.fillStyle = `rgba(255, 255, 255, ${m.opacity})`;
+                ctx.fillText(m.text, m.x, m.y);
+                m.y -= m.speed;
+                if (m.y < -50) {
+                    m.y = canvas.height + 50;
+                    m.x = Math.random() * canvas.width;
+                }
+            });
+        }
+
+        function runSimulation() {
+            if (isSimulating) return;
+            isSimulating = true;
+            runButton.innerText = "SCANNING SYSTEM...";
+            runButton.style.borderColor = "#f0a500"; // Color de "procesando"
+            runButton.style.color = "#f0a500";
+
+            currentPrediction = Math.random() < 0.3 ? 'failure' : 'normal';
+            resultContainer.style.opacity = '0';
+            classifiedImageEl.style.opacity = '0.1';
+
+            const inputNodes = particles.filter(p => p.layer === 0);
+            inputNodes.forEach(startNode => {
+                const targetNodes = particles.filter(p => p.layer === startNode.layer + 1);
+                targetNodes.forEach(endNode => {
+                    pulses.push(new Pulse(startNode, endNode));
+                });
+            });
+        }
+
+        class Pulse {
+            constructor(startNode, endNode) {
+                this.start = startNode;
+                this.end = endNode;
+                this.progress = 0;
+                this.speed = 0.005 + Math.random() * 0.002;
+                this.dead = false;
+            }
+            update() {
+                this.progress += this.speed;
+                if (this.progress >= 1 && !this.dead) {
+                    this.dead = true;
+                    this.triggerNextLayer();
+                }
+            }
+            draw() {
+                const px = this.start.x + (this.end.x - this.start.x) * this.progress;
+                const py = this.start.y + (this.end.y - this.start.y) * this.progress;
+                ctx.fillStyle = "#ffffff";
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = "#ffffff";
+                ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI * 2); ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            triggerNextLayer() {
+                const nextLayerIndex = this.end.layer + 1;
+                let targetNodes = particles.filter(p => p.layer === nextLayerIndex);
+                if (nextLayerIndex === layers.length - 1) {
+                    targetNodes = targetNodes.filter(p => p.indexInLayer === (currentPrediction === 'dog' ? 0 : 1));
+                }
+                if (this.end.layer === layers.length - 1) {
+                    finalizeClassification();
+                } else {
+                    targetNodes.forEach(nextNode => {
+                        if (pulses.length < 400) pulses.push(new Pulse(this.end, nextNode));
+                    });
+                }
+            }
+        }
+
+        function finalizeClassification() {
+            if (pulses.length > 5 || resultContainer.style.opacity === '1') return;
+            isSimulating = false;
+
+            // Restauramos el texto original del botón
+            runButton.innerText = "RUN DIAGNOSTIC SCAN";
+
+            if (currentPrediction === 'failure') {
+                classifierLabelEl.innerText = "WARNING: ANOMALY";
+                classifierLabelEl.style.color = "#ff4d4d";
+                runButton.style.borderColor = "#00d1ff"; // Volver al azul original o dejarlo neutral
+                runButton.style.color = "#00d1ff";
+                document.getElementById('result-frame').style.borderColor = "#ff4d4d";
+                drawSensorGraph(true);
+            } else {
+                classifierLabelEl.innerText = "STATUS: OPTIMAL";
+                classifierLabelEl.style.color = "#00ff88";
+                runButton.style.borderColor = "#00d1ff";
+                runButton.style.color = "#00d1ff";
+                document.getElementById('result-frame').style.borderColor = "#00ff88";
+                drawSensorGraph(false);
+            }
+
+            resultContainer.style.opacity = '1';
+            setTimeout(() => classifiedImageEl.style.opacity = '1', 100);
+        }
+
+        function drawSensorGraph(isFailure) {
+            const frame = document.getElementById('result-frame');
+            frame.innerHTML = `<canvas id="sensorCanvas" width="350" height="250"></canvas>`;
+            const sCanvas = document.getElementById('sensorCanvas');
+            const sCtx = sCanvas.getContext('2d');
+
+            // Color: Rojo puro para fallo, Verde neón para óptimo
+            const mainColor = isFailure ? "#ff4d4d" : "#00ff88";
+
+            // Parámetros aleatorios para que cada animación sea única
+            const baseFreq = 0.05 + Math.random() * 0.1;
+            const amplitude = 20 + Math.random() * 20;
+            const noiseLevel = isFailure ? 40 : 5;
+
+            // Fondo sutil de cuadrícula (estilo osciloscopio)
+            sCtx.strokeStyle = "rgba(0, 255, 136, 0.05)";
+            sCtx.lineWidth = 1;
+            for (let i = 0; i < 350; i += 25) {
+                sCtx.beginPath(); sCtx.moveTo(i, 0); sCtx.lineTo(i, 250); sCtx.stroke();
+                sCtx.beginPath(); sCtx.moveTo(0, i); sCtx.lineTo(350, i); sCtx.stroke();
+            }
+
+            // Dibujar la señal principal
+            sCtx.strokeStyle = mainColor;
+            sCtx.lineWidth = 2;
+            sCtx.shadowBlur = 8;
+            sCtx.shadowColor = mainColor;
+            sCtx.beginPath();
+            sCtx.moveTo(0, 125);
+
+            for (let x = 0; x < 350; x++) {
+                // Generamos la forma de onda
+                let sine = Math.sin(x * baseFreq);
+
+                // Si es fallo, añadimos armónicos extraños y mucho ruido
+                if (isFailure) {
+                    sine += Math.sin(x * baseFreq * 2.5) * 0.5; // Interferencia
+                    sine += (Math.random() - 0.5) * 1.5;         // Inestabilidad
+                }
+
+                let noise = (Math.random() - 0.5) * noiseLevel;
+                let y = 125 + (sine * amplitude) + noise;
+
+                sCtx.lineTo(x, y);
+            }
+
+            sCtx.stroke();
+            sCtx.shadowBlur = 0; // Reset para no afectar otros elementos
+        }
+
+
+        function drawLines() {
+            ctx.lineWidth = 0.8;
+            particles.forEach(p => {
+                particles.filter(pNext => pNext.layer === p.layer + 1).forEach(pNext => {
+                    ctx.strokeStyle = `rgba(255, 255, 255, 0.3)`;
+                    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(pNext.x, pNext.y); ctx.stroke();
+                });
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawMath();
+            drawLines();
+            particles.forEach(p => {
+                p.x = p.baseX + Math.sin(Date.now() * 0.001 + p.baseY) * 5;
+                p.y = p.baseY + Math.cos(Date.now() * 0.001 + p.baseX) * 5;
+                ctx.shadowBlur = 15; ctx.shadowColor = p.color; ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2); ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+            for (let i = pulses.length - 1; i >= 0; i--) {
+                pulses[i].update(); pulses[i].draw();
+                if (pulses[i].dead) pulses.splice(i, 1);
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // --- AUTOMATIZACIÓN ---
+        // Ejecuta la simulación cada 15 segundos (15000 ms)
+        setInterval(runSimulation, 5000);
+
+        runButton.addEventListener('click', runSimulation);
+        window.addEventListener('resize', init);
+        init();
+        animate();
+        setTimeout(runSimulation, 1000); // Primera ejecución al segundo de cargar
+    </script>
+</body>
+
+</html>

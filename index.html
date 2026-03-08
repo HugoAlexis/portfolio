@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portafolio | Hugo Torres</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
+</head>
+<body>
+
+    <div class="grid-background"></div>
+    <section class="hero-section">
+
+        <div class="background-effects">
+            <div class="glow glow-1"></div>
+            <div class="glow glow-2"></div>
+            
+        </div>
+
+        <nav class="navbar section-center">
+            <div class="logo">Hugo<span class="highlight">Torres</span></div>
+            <ul class="nav-links">
+                <li><a href="#about">About</a></li>
+                <li><a href="#skills">Skills</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#visualizations">Visualizations</a></li>
+                <li><a href="#blog">Blog</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+
+        <div class="hero-container section-center">
+            <div class="hero-info-column">
+                <div class="profile-photo-container">
+                    <img src="tu-foto.jpg" alt="Foto de Hugo Torres" class="profile-photo">
+                </div>
+                
+                <div class="availability-badge">
+                    <span class="status-dot"></span> Available for opportunities
+                </div>
+
+                <h1 class="title">Hugo<br><span class="highlight">Torres</span></h1>
+                
+                <p class="subtitle">Data Scientist • Machine Learning • Data Visualization</p>
+                
+                <p class="description">
+                    I build data-driven solutions using machine learning, data analysis, and data visualization.
+                </p>
+                
+                <div class="hero-buttons">
+                    <a href="#proyectos" class="btn btn-primary">View Projects</a>
+                    <a href="#cv" class="btn btn-secondary"><i class="fas fa-download"></i> Download CV</a>
+                    <a href="#contacto" class="btn btn-tertiary"><i class="fas fa-envelope"></i> Contact</a>
+                </div>
+            </div>
+
+            <div class="hero-visual-column">
+                <div class="carousel-container">
+                    
+                    <div class="carousel-slide active">
+                        <div class="carousel-image-container">
+                            <img src="assets/visualizacion1.png" alt="Modelo ML Diagnóstico" class="carousel-image">
+                        </div>
+                        <p class="carousel-caption">Ensemble Models for COVID-19 Diagnosis</p>
+                    </div>
+                    
+                    <div class="carousel-slide">
+                        <div class="carousel-image-container">
+                            <img src="assets/visualizacion2.png" alt="Clustering de Metabolitos" class="carousel-image">
+                        </div>
+                        <p class="carousel-caption">Multi-study Metabolomics Dataset Integration</p>
+                    </div>
+
+                    <div class="carousel-slide">
+                        <div class="carousel-image-container">
+                            <img src="assets/visualizacion3.png" alt="Curso de NumPy" class="carousel-image">
+                        </div>
+                        <p class="carousel-caption">Data Manipulation with NumPy</p>
+                    </div>
+
+                    <div class="carousel-slide">
+                        <div class="carousel-image-container">
+                            <img src="assets/visualizacion4.png" alt="Curso de NumPy" class="carousel-image">
+                        </div>
+                        <p class="carousel-caption">Data Manipulation with NumPy</p>
+                    </div>
+                    
+                    <button class="carousel-control prev" id="prevBtn"><i class="fas fa-chevron-left"></i></button>
+                    <button class="carousel-control next" id="nextBtn"><i class="fas fa-chevron-right"></i></button>
+                    
+                    <div class="carousel-indicators">
+                        <span class="dot active"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <section id="about" class="about-section">
+        <div class="section-center">
+            
+            <div class="section-header">
+                <p class="section-subtitle">ABOUT ME</p>
+                <h2 class="section-title">Turning data into <span class="highlight-text">knowledge</span></h2>
+            </div>
+            
+            <div class="about-grid">
+                
+                <div class="terminal-window">
+                    <div class="terminal-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                        <span class="terminal-title">hugo@data-science:~/perfil</span>
+                    </div>
+                    <div class="terminal-body">
+                        <p><span class="prompt">hugo@data-science:~$</span> cat biografia.txt</p>
+                        <p class="terminal-text">
+                            Mi camino hacia la ciencia de datos comenzó en la <strong>Física</strong>, donde desarrollé una base sólida en matemáticas y modelado analítico. Esta pasión por extraer respuestas de sistemas complejos me llevó a cursar una <strong>Maestría</strong> y, posteriormente, mi <strong>Doctorado</strong>.
+                            <br><br>
+                            En mi investigación doctoral, me especializo en la integración de datasets de metabolómica de alta dimensionalidad. Mi trabajo se enfoca en desarrollar y evaluar modelos de Machine Learning —específicamente métodos de ensamble en subespacios— para el diagnóstico preciso de COVID-19.
+                            <br><br>
+                            Combino este rigor científico con habilidades en programación (Python, automatización con web scraping y visualización) para construir soluciones que transformen datos crudos en conocimiento accionable.
+                        </p>
+                        <p><span class="prompt">hugo@data-science:~$</span> <span class="cursor">_</span></p>
+                    </div>
+                </div>
+
+                <div class="timeline-container">
+                    <h3 class="details-title"><i class="fas fa-route"></i> Trayectoria</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <h4>BSc. Física</h4>
+                            <p>Bases matemáticas y modelado analítico de sistemas complejos.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <h4>Maestría</h4>
+                            <p>Transición hacia el análisis de datos e investigación aplicada.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot current"></div>
+                            <h4>Ph.D. Candidate (Actual)</h4>
+                            <p>Investigación en Machine Learning y metabolómica aplicada al diagnóstico médico.</p>
+                        </div>
+                        <div class="timeline-item future">
+                            <div class="timeline-dot outline"></div>
+                            <h4>Data Scientist / ML Engineer</h4>
+                            <p>Próximo objetivo: Llevar la resolución de problemas complejos al sector industrial.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div> <div class="personal-card bottom-card">
+                <h3 class="details-title"><i class="fas fa-user-astronaut"></i> Beyond the Code</h3>
+                <div class="personal-content">
+                    <p class="personal-text">
+                        Fuera de la terminal de comandos de Zorin OS, disfruto armar y optimizar hardware de PC, siempre manteniendo un setup dual-boot bien afinado para transicionar del código a algunas sesiones de simulación de vuelo, Forza o CoD Zombies. 
+                    </p>
+                    <p class="personal-text">
+                        Además de entrenar algoritmos y evaluar métricas de rendimiento, este año me he propuesto un reto físico importante lejos de los monitores: acumular kilómetros para correr mi primer maratón.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <section id="skills" class="skills-section">
+        <div class="section-center">
+            
+            <div class="section-header">
+                <p class="section-subtitle">TECH STACK</p>
+                <h2 class="section-title">Skills &amp; <span class="highlight-text">Technologies</span></h2>
+            </div>
+            
+            <div class="skills-showcase">
+                
+                <div class="premium-skill-card">
+                    <div class="card-content">
+                        <i class="fab fa-python skill-icon"></i>
+                        <h4>Programación & Datos</h4>
+                        <p>Desarrollo de scripts, pipelines de procesamiento y análisis exploratorio complejo.</p>
+                        <div class="skill-tags">
+                            <span>Python</span>
+                            <span>SQL</span>
+                            <span>R</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="premium-skill-card">
+                    <div class="card-content">
+                        <i class="fas fa-brain skill-icon"></i>
+                        <h4>Machine Learning</h4>
+                        <p>Construcción, entrenamiento y evaluación de modelos predictivos y de ensamble.</p>
+                        <div class="skill-tags">
+                            <span>Scikit-Learn</span>
+                            <span>Ensemble Methods</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="premium-skill-card">
+                    <div class="card-content">
+                        <i class="fa-solid fa-chart-pie skill-icon"></i>
+                        <h4>Data & Visualización</h4>
+                        <p>Manipulación de arrays multidimensionales y creación de visualizaciones interactivas.</p>
+                        <div class="skill-tags">
+                            <span>NumPy</span>
+                            <span>Pandas</span>
+                            <span>Plotly</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="premium-skill-card">
+                    <div class="card-content">
+                        <i class="fas fa-terminal skill-icon"></i>
+                        <h4>Herramientas & Entorno</h4>
+                        <p>Automatización de tareas, control de versiones y extracción de datos web.</p>
+                        <div class="skill-tags">
+                            <span>Linux</span>
+                            <span>Git</span>
+                            <span>Web Scraping</span>
+                            <span>APIs</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="tech-ticker-wrap">
+                <div class="tech-ticker">
+                    <div class="tech-item"><i class="devicon-python-plain"></i> Python</div>
+                    <div class="tech-item"><i class="devicon-numpy-plain"></i> NumPy</div>
+                    <div class="tech-item"><i class="devicon-pandas-plain"></i> Pandas</div>
+                    <div class="tech-item"><i class="devicon-postgresql-plain"></i> PostgreSQL</div>
+                    <div class="tech-item"><i class="devicon-plotly-plain"></i> Plotly</div>
+                    <div class="tech-item"><i class="devicon-matplotlib-plain"></i> Matplotlib</div>
+                    <div class="tech-item"><i class="devicon-jupyter-plain"></i> Jupyter</div>
+                    <div class="tech-item"><i class="devicon-git-plain"></i> Git</div>
+                    <div class="tech-item"><i class="devicon-scikitlearn-plain"></i> Scikit-Learn</div>
+                    <div class="tech-item"><i class="devicon-tensorflow-original"></i> TensorFlow</div>
+                    <div class="tech-item"><i class="devicon-linux-plain"></i> Linux</div>
+                    
+                    <div class="tech-item"><i class="devicon-python-plain"></i> Python</div>
+                    <div class="tech-item"><i class="devicon-numpy-plain"></i> NumPy</div>
+                    <div class="tech-item"><i class="devicon-pandas-plain"></i> Pandas</div>
+                    <div class="tech-item"><i class="devicon-postgresql-plain"></i> PostgreSQL</div>
+                    <div class="tech-item"><i class="devicon-plotly-plain"></i> Plotly</div>
+                    <div class="tech-item"><i class="devicon-matplotlib-plain"></i> Matplotlib</div>
+                    <div class="tech-item"><i class="devicon-jupyter-plain"></i> Jupyter</div>
+                    <div class="tech-item"><i class="devicon-git-plain"></i> Git</div>
+                    <div class="tech-item"><i class="devicon-scikitlearn-plain"></i> Scikit-Learn</div>
+                    <div class="tech-item"><i class="devicon-tensorflow-original"></i> TensorFlow</div>
+                    <div class="tech-item"><i class="devicon-linux-plain"></i> Linux</div>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <section id="projects" class="projects-section section-center">
+        
+        <div class="section-header">
+            <p class="section-subtitle">PORTFOLIO</p>
+            <h2 class="section-title">Featured <span class="highlight-text">Projects</span></h2>
+        </div>
+
+        <div class="portfolio-container">
+            <div class="featured-project-view" id="featured-view">
+                <div class="featured-image-col">
+                    <img src="assets/proyecto_activo.png" alt="Proyecto Destacado" id="featured-img" class="featured-img">
+                </div>
+                
+                <div class="featured-info-col">
+                    <h3 class="featured-title" id="featured-title">Cargando proyecto...</h3>
+                    <p class="featured-desc" id="featured-desc">...</p>
+                    
+                    <div class="skill-tags" id="featured-tags">
+                        </div>
+                    
+                    <a href="#" class="btn btn-primary mt-4" id="featured-link" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Ver Proyecto
+                    </a>
+                </div>
+            </div>
+
+            <div class="project-thumbnails" id="thumbnail-ribbon">
+                
+                <div class="thumb-card active" data-index="0">
+                    <img src="assets/proyecto2.jpg" alt="Preview COVID-19" class="thumb-bg">
+                    <div class="thumb-overlay">
+                        <span class="thumb-category"><i class="fas fa-microscope"></i> ML / Healthcare</span>
+                        <span class="thumb-title">COVID-19 Ensembles</span>
+                    </div>
+                </div>
+                
+                <div class="thumb-card" data-index="1">
+                    <img src="assets/proyecto3.jpg" alt="Preview Scraping" class="thumb-bg">
+                    <div class="thumb-overlay">
+                        <span class="thumb-category"><i class="fas fa-spider"></i> Data Engineering</span>
+                        <span class="thumb-title">Data Extraction API</span>
+                    </div>
+                </div>
+                
+                <div class="thumb-card" data-index="2">
+                    <img src="assets/proyecto3.jpg" alt="Preview NumPy" class="thumb-bg">
+                    <div class="thumb-overlay">
+                        <span class="thumb-category"><i class="fas fa-graduation-cap"></i> Education</span>
+                        <span class="thumb-title">NumPy Analytics</span>
+                    </div>
+                </div>
+
+                <div class="thumb-card" data-index="3">
+                    <img src="assets/proyecto4.jpg" alt="Preview NumPy" class="thumb-bg">
+                    <div class="thumb-overlay">
+                        <span class="thumb-category"><i class="fas fa-graduation-cap"></i> Education</span>
+                        <span class="thumb-title">Dashboard Power Transformer</span>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+    </section>
+
+
+    <div class="section-divider"></div>
+
+
+    <script src="main.js"></script>
+</body>
+</html>
