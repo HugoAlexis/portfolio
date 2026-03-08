@@ -9,7 +9,7 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #03060a;
+            background-color: #0d1117;
             /* Ultra oscuro para contraste */
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -37,7 +37,7 @@
         /* Contenedor de la Imagen Clasificada (Derecha) */
         #classifier-result-container {
             position: absolute;
-            right: 5%;
+            right: 0%;
             top: 50%;
             transform: translateY(-50%);
             display: flex;
@@ -52,8 +52,8 @@
         }
 
         #result-frame {
-            width: 350px;
-            height: 250px;
+            width: 120px;
+            height: 80px;
             border: 2px solid #00d1ff;
             background-color: #050a0f;
             position: relative;
@@ -63,7 +63,7 @@
         #classifier-label {
             font-family: 'Courier New', Courier, monospace;
             /* Fuente tipo terminal */
-            font-size: 1.8rem;
+            font-size: 1rem;
         }
 
         #result-frame img {
@@ -115,7 +115,7 @@
         }
 
         #equipment-image {
-            width: 250px;
+            width: 120px;
             /* Ajusta según tu imagen */
             height: auto;
             /* Efecto de brillo cyan sutil para integrarlo */
@@ -207,8 +207,8 @@
             particles = [];
             pulses = [];
 
-            const equipmentWidth = 300;
-            const availableWidth = canvas.width - equipmentWidth - 400; // 400px espacio para el clasificador
+            const equipmentWidth = 80;
+            const availableWidth = canvas.width - equipmentWidth - 150; // 400px espacio para el clasificador
 
             const spacingX = availableWidth / (layers.length + 1);
 
@@ -216,16 +216,16 @@
             const offsetX = equipmentWidth + 50;
 
             layers.forEach((count, lIndex) => {
-                const spacingY = canvas.height / (count + 1);
+                const spacingY = 0.8 * canvas.height / (count + 1);
                 for (let i = 0; i < count; i++) {
                     particles.push({
                         indexInLayer: i,
                         x: offsetX + spacingX * (lIndex + 1),
                         y: spacingY * (i + 1),
                         baseX: offsetX + spacingX * (lIndex + 1),
-                        baseY: spacingY * (i + 1),
+                        baseY: spacingY * (i + 1) + 50,
                         layer: lIndex,
-                        size: 40,
+                        size: 20,
                         color: lIndex === 0 ? '#00d1ff' : (lIndex === layers.length - 1 ? '#ff4d4d' : '#f0a500')
                     });
                 }
@@ -242,7 +242,7 @@
                     text: equations[Math.floor(Math.random() * equations.length)],
                     speed: 0.2 + Math.random() * 0.3,
                     opacity: 0.1 + Math.random() * 0.2,
-                    fontSize: 15 + Math.random() * 20 // Tamaño grande como pediste
+                    fontSize: 10 + Math.random() * 15 // Tamaño grande como pediste
                 });
             }
         }
@@ -285,7 +285,7 @@
                 this.start = startNode;
                 this.end = endNode;
                 this.progress = 0;
-                this.speed = 0.005 + Math.random() * 0.002;
+                this.speed = 0.008 + Math.random() * 0.005;
                 this.dead = false;
             }
             update() {
@@ -349,52 +349,57 @@
 
         function drawSensorGraph(isFailure) {
             const frame = document.getElementById('result-frame');
-            frame.innerHTML = `<canvas id="sensorCanvas" width="350" height="250"></canvas>`;
+            // Dimensiones nuevas: 120x80
+            const w = 120;
+            const h = 80;
+            const centerY = h / 2; // Ahora el centro es 40
+
+            frame.innerHTML = `<canvas id="sensorCanvas" width="${w}" height="${h}"></canvas>`;
             const sCanvas = document.getElementById('sensorCanvas');
             const sCtx = sCanvas.getContext('2d');
 
-            // Color: Rojo puro para fallo, Verde neón para óptimo
             const mainColor = isFailure ? "#ff4d4d" : "#00ff88";
 
-            // Parámetros aleatorios para que cada animación sea única
-            const baseFreq = 0.05 + Math.random() * 0.1;
-            const amplitude = 20 + Math.random() * 20;
-            const noiseLevel = isFailure ? 40 : 5;
+            // Ajustamos la amplitud para que no se salga del canvas pequeño
+            const baseFreq = 0.1 + Math.random() * 0.1;
+            const amplitude = isFailure ? 15 : 10; // Reducida para que quepa en 80px de alto
+            const noiseLevel = isFailure ? 15 : 2;
 
-            // Fondo sutil de cuadrícula (estilo osciloscopio)
+            // Cuadrícula ajustada al nuevo tamaño
             sCtx.strokeStyle = "rgba(0, 255, 136, 0.05)";
             sCtx.lineWidth = 1;
-            for (let i = 0; i < 350; i += 25) {
-                sCtx.beginPath(); sCtx.moveTo(i, 0); sCtx.lineTo(i, 250); sCtx.stroke();
-                sCtx.beginPath(); sCtx.moveTo(0, i); sCtx.lineTo(350, i); sCtx.stroke();
+            for (let i = 0; i < w; i += 20) {
+                sCtx.beginPath(); sCtx.moveTo(i, 0); sCtx.lineTo(i, h); sCtx.stroke();
+            }
+            for (let i = 0; i < h; i += 20) {
+                sCtx.beginPath(); sCtx.moveTo(0, i); sCtx.lineTo(w, i); sCtx.stroke();
             }
 
-            // Dibujar la señal principal
+            // Dibujar la señal
             sCtx.strokeStyle = mainColor;
-            sCtx.lineWidth = 2;
-            sCtx.shadowBlur = 8;
+            sCtx.lineWidth = 1.5; // Un poco más delgada para el tamaño pequeño
+            sCtx.shadowBlur = 5;
             sCtx.shadowColor = mainColor;
             sCtx.beginPath();
-            sCtx.moveTo(0, 125);
+            sCtx.moveTo(0, centerY);
 
-            for (let x = 0; x < 350; x++) {
-                // Generamos la forma de onda
+            for (let x = 0; x < w; x++) {
                 let sine = Math.sin(x * baseFreq);
 
-                // Si es fallo, añadimos armónicos extraños y mucho ruido
                 if (isFailure) {
-                    sine += Math.sin(x * baseFreq * 2.5) * 0.5; // Interferencia
-                    sine += (Math.random() - 0.5) * 1.5;         // Inestabilidad
+                    sine += Math.sin(x * baseFreq * 2.5) * 0.5;
+                    sine += (Math.random() - 0.5) * 0.8;
                 }
 
                 let noise = (Math.random() - 0.5) * noiseLevel;
-                let y = 125 + (sine * amplitude) + noise;
+                // La Y ahora se calcula en base al nuevo centerY (40)
+                let y = centerY + (sine * amplitude) + noise;
 
                 sCtx.lineTo(x, y);
             }
 
             sCtx.stroke();
-            sCtx.shadowBlur = 0; // Reset para no afectar otros elementos
+            sCtx.shadowBlur = 0;
         }
 
 
