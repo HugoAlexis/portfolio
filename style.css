@@ -8,8 +8,8 @@
 
 :root {
     --bg-color: #0d1117;
-    --text-main: #6c7175;
-    --text-muted: #8b949e;
+    --text-main: white;
+    --text-muted: #c5d1df;
     --accent-color: #9c8cff; /* Lila para 'Torres' y detalles */
     --accent-glow: rgba(156, 140, 255, 0.4);
     --accent-glow-secondary: #00ffcc;
@@ -231,7 +231,8 @@ section {
 
 /* Contenedor del Hero */
 .hero-container {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
     align-items: center;
     justify-content: space-between;
     min-height: 90vh;
@@ -243,15 +244,15 @@ section {
 /* Columna Izquierda */
 .hero-info-column {
     flex: 1;
-    max-width: 700px;
+    max-width: 900px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
 }
 
 .profile-photo-container {
-    width: 200px;
-    height: 200px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
     border: 3px solid var(--accent-color);
     box-shadow: 0 0 20px var(--accent-glow);
@@ -285,7 +286,7 @@ section {
 }
 
 .title {
-    font-size: 3rem;
+    font-size: 2.5rem;
     line-height: 1.1;
     color: #fff;
     margin-bottom: 1rem;
@@ -299,8 +300,10 @@ section {
 
 .description {
     color: var(--text-muted);
-    font-size: 0.95rem;
+    font-size: 1.15rem;
     margin-bottom: 2rem;
+    background: var(--bg-color);
+    color: white;
 }
 
 /* Botones */
@@ -345,14 +348,14 @@ section {
 
 /* Columna Derecha (Carrusel) */
 .hero-visual-column {
-    flex: 1.2;
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .carousel-container {
-    width: 100%;
+    width: 50%;
     height: 45vh;
     overflow: hidden;
     position: relative;
@@ -1357,4 +1360,77 @@ section {
     box-shadow:
         -6px -6px 12px color-mix(in srgb, var(--accent-glow) 40%, transparent),
          6px  6px 12px color-mix(in srgb, var(--accent-glow-secondary) 40%, transparent);
+}
+
+
+.services-selector {
+    display: flex;
+    flex-wrap: wrap; /* Permite que los elementos salten a la siguiente línea */
+    gap: 20px;       /* Un poco más de espacio horizontal para que respiren */
+    row-gap: 15px;   /* Espacio específico entre las filas cuando se dividen */
+    margin-top: 25px;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    max-width: 100%; /* Asegura que no se desborde del contenedor padre */
+}
+
+.service-tab {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 5px 0;
+    cursor: pointer;
+    font-size: 1.15rem; /* Un poco más pequeño ayuda a la legibilidad en móvil */
+    font-family: inherit;
+    transition: all 0.4s ease;
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap; /* Evita que el texto de un solo botón se rompa a la mitad */
+}
+
+
+/* Ajuste para el selector: aumentamos el gap para que el divisor quepa bien */
+.services-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px; 
+    row-gap: 5px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+}
+ 
+
+.service-tab:hover {
+    color: var(--accent-color);
+}
+
+.service-tab.active {
+    color: var(--accent-color); /* Tu color morado */
+    text-shadow: 0 0 5px var(--accent-color);
+}
+
+.service-tab.active::before {
+    content: " ‣ ";
+    font-size: 2rem;
+    position: absolute;
+    left: -18px;
+    top: 50%;
+    transform: translateY(-55%);
+}
+
+
+.service-tab.active::after {
+    width: 100%;
+}
+
+/* Transición para el Iframe y el Texto */
+#hero-iframe, #hero-description {
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.fade-out {
+    opacity: 0;
+    transform: translateY(10px);
 }

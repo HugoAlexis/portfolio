@@ -28,65 +28,65 @@
     </nav>
 
     <div class="grid-background"></div>
-<section class="hero-section">
+    <section class="hero-section">
 
-    <div class="background-effects">
-        <div class="glow glow-1"></div>
-        <div class="glow glow-2"></div>
-    </div>
+        <div class="background-effects">
+            <div class="glow glow-1"></div>
+            <div class="glow glow-2"></div>
+        </div>
 
 
-    <div class="hero-container section-center">
+        <div class="hero-container section-center">
 
-        <div class="hero-info-column">
+            <div class="hero-info-column">
 
-            <div class="profile-photo-container">
-                <img src="tu-foto.png" alt="Hugo Torres Data Scientist" class="profile-photo">
+                <div class="profile-photo-container">
+                    <img src="tu-foto.png" alt="Hugo Torres Data Scientist" class="profile-photo">
+                </div>
+
+                <div class="availability-badge">
+                    <span class="status-dot"></span> Available for freelance projects
+                </div>
+
+                <h1 class="title">
+                    Data & Artificial Intelligence <br>
+                    <span class="highlight">Solutions</span>
+                </h1>
+
+
+                <div class="services-selector">
+                    <button class="service-tab active" onclick="updateHero('ml', event)">Machine Learning Models</button>
+                    <button class="service-tab" onclick="updateHero('scraping', event)">Web Scraping</button>
+                    <button class="service-tab" onclick="updateHero('forecasting', event)">Time Series & Forecasting</button>
+                    <button class="service-tab" onclick="updateHero('dashboards', event)">Interactive Dashboards</button>
+                </div>
+
+                <p id="hero-description" class="description">
+                    I help companies automate data collection and build predictive systems that drive smarter decisions.
+                </p>
+
+                <div class="hero-buttons">
+                    <a href="#services" class="btn btn-primary">
+                        <i class="fas fa-laptop-code"></i> View Services
+                    </a>
+
+                    <a href="#projects" class="btn btn-secondary">
+                        Case Studies
+                    </a>
+
+                    <a href="#contact" class="btn btn-tertiary">
+                        <i class="fas fa-envelope"></i> Get in Touch
+                    </a>
+                </div>
+
             </div>
 
-            <div class="availability-badge">
-                <span class="status-dot"></span> Available for freelance projects
-            </div>
-
-            <h1 class="title">
-                Data & Artificial Intelligence <br>
-                <span class="highlight">Solutions</span>
-            </h1>
-
-            <p class="subtitle">
-                Predictive Models • Time Series Forecasting • Web Data Extraction • Interactive Dashboards
-            </p>
-
-            <p class="description">
-                I help companies turn data into actionable insights through
-                machine learning, predictive modeling, web scraping and
-                data visualization systems.
-            </p>
-
-            <div class="hero-buttons">
-                <a href="#services" class="btn btn-primary">Explore Services</a>
-
-                <a href="#projects" class="btn btn-secondary">
-                    View Case Studies
-                </a>
-
-                <a href="#contact" class="btn btn-tertiary">
-                    <i class="fas fa-envelope"></i> Work With Me
-                </a>
+            <div class="hero-visual-column iframe-container">
+                <iframe class="nn-iframe" id="hero-iframe" src="ts_forecasting.html" frameborder="0" scrolling="no" style="width:100%; height:600px; border:none; overflow:hidden;"></iframe>
             </div>
 
         </div>
-
-        <div class="hero-visual-column">
-            <iframe class="nn-iframe"
-                src="nn.html"
-                style="width:100%; height:600px; border:none; overflow:hidden;"
-                scrolling="no">
-            </iframe>
-        </div>
-
-    </div>
-</section>
+    </section>
 
     <div class="section-divider"></div>
 
@@ -270,7 +270,7 @@
         <div class="portfolio-container">
             <div class="featured-project-view" id="featured-view">
                 <div class="featured-image-col">
-                    <img src="assets/proyecto_activo.png" alt="Proyecto Destacado" id="featured-img" class="featured-img">
+                    <img src="assets/proyecto1.jpg" alt="Proyecto Destacado" id="featured-img" class="featured-img">
                 </div>
                 
                 <div class="featured-info-col">

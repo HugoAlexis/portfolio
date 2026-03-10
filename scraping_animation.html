@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { margin: 0; background: #03060a; overflow: hidden; font-family: sans-serif; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <canvas id="scrapingCanvas"></canvas>
+    <script>
+        let logs = [];
+        const logMessages = [
+            "GET /api/v1/products...", "STATUS 200 OK", "EXTRACTING SELECTOR: .price",
+            "PARSING HTML...", "DATABASE UPLOAD SUCCESS", "ROTATING PROXY...",
+            "USER-AGENT: Mozilla/5.0...", "DELAY: 1500ms", "SCRAPING PAGE 4/10"
+        ];
+
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            database.x = canvas.width - 150;
+            database.y = canvas.height / 2 - 40;
+
+            webPages = [];
+            for(let i=0; i<3; i++) {
+                webPages.push({
+                    x: 100,
+                    y: (canvas.height / 4) * (i + 1) - 60,
+                    offset: Math.random() * Math.PI * 2
+                });
+            }
+            // Inicializar algunos logs
+            logs = ["INITIALIZING SCRAPER...", "CONNECTING TO DATABASE..."];
+        }
+
+
+        const canvas = document.getElementById('scrapingCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        let webPages = [];
+        const database = { x: 0, y: 0, w: 60, h: 80 };
+
+        
+
+        class DataParticle {
+            constructor(startX, startY) {
+                this.x = startX;
+                this.y = startY;
+                this.targetX = database.x + 30;
+                this.targetY = database.y + 40;
+                this.speed = 2 + Math.random() * 3;
+                this.size = 2 + Math.random() * 3;
+                this.color = Math.random() > 0.5 ? "#00d1ff" : "#ffffff";
+                this.alpha = 1;
+            }
+
+            update() {
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                this.x += (dx / dist) * this.speed;
+                this.y += (dy / dist) * this.speed;
+
+                if (dist < 5) this.alpha = 0;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.alpha;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function drawConnections() {
+            ctx.strokeStyle = "rgba(0, 209, 255, 0.05)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let i = 0; i < webPages.length - 1; i++) {
+                ctx.moveTo(webPages[i].x + 50, webPages[i].y + 60);
+                ctx.lineTo(webPages[i+1].x + 50, webPages[i+1].y + 60);
+            }
+            ctx.stroke();
+        }
+
+        function drawLogs() {
+            ctx.font = "15px 'Courier New', monospace";
+            ctx.fillStyle = "rgba(0, 210, 255, 0.6)";
+            
+            // Añadir log aleatorio de vez en cuando
+            if (Math.random() < 0.01) {
+                logs.push(logMessages[Math.floor(Math.random() * logMessages.length)]);
+                if (logs.length > 8) logs.shift();
+            }
+
+            logs.forEach((log, i) => {
+                ctx.fillText(`> ${log}`, canvas.width - 335, canvas.height - 20 - (i * 15));
+            });
+        }
+
+        function drawBackground() {
+            // Dibujar algunos puntos de red estáticos en el fondo
+            ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+            for(let i=0; i<50; i++) {
+                const x = (i * 137.5) % canvas.width;
+                const y = (i * 54.3) % canvas.height;
+                ctx.fillRect(x, y, 1, 1);
+            }
+        }
+
+        function drawDatabase() {
+            ctx.strokeStyle = "#00d1ff";
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#00d1ff";
+            
+            // Cilindro simple
+            ctx.beginPath();
+            ctx.ellipse(database.x + 30, database.y, 30, 10, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.strokeRect(database.x, database.y, 60, 80);
+            ctx.beginPath();
+            ctx.ellipse(database.x + 30, database.y + 80, 30, 10, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        function drawWebPage(page) {
+            // 1. Movimiento de flotación suave
+            const hover = Math.sin(Date.now() * 0.002 + page.offset) * 15;
+            const x = page.x;
+            const y = page.y + hover;
+            const w = 200; // Ancho de la ventana
+            const h = 120; // Alto de la ventana
+
+            // 2. Dibujar el marco de la ventana (Browser Window)
+            ctx.strokeStyle = "rgba(0, 209, 255, 0.4)";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, w, h);
+
+            // 3. Dibujar el "Browser Header" (Barra de título)
+            ctx.fillStyle = "rgba(0, 209, 255, 0.2)";
+            ctx.fillRect(x, y, w, 20);
+            
+            // Pequeños botones del navegador (estilo semáforo)
+            ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+            for(let i=0; i<3; i++) {
+                ctx.beginPath();
+                ctx.arc(x + 10 + (i * 12), y + 10, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 4. Simular contenido interno (Wireframe)
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+            ctx.lineWidth = 1;
+
+            // Bloque de imagen o Hero
+            ctx.strokeRect(x + 10, y + 30, w - 20, 30); 
+            
+            // Líneas de texto simuladas
+            for(let i=0; i<3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(x + 10, y + 75 + (i * 10));
+                ctx.lineTo(x + w - 10, y + 75 + (i * 10));
+                ctx.stroke();
+            }
+
+            // Botón o CTA inferior
+            ctx.strokeRect(x + 10, y + 105, 30, 8);
+
+            // 5. Generar Partículas de Datos (Efecto de Extracción)
+            // Salen desde el centro del "contenido" de la página
+            if (Math.random() < 0.12) {
+                particles.push(new DataParticle(x + w, y + h / 2));
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawBackground();   // Capa 0: Fondo
+            drawConnections();  // Capa 1: Vínculos entre webs
+            drawLogs();         // Capa 2: UI de terminal
+            drawDatabase();     // Capa 3: Objetivo
+            
+            webPages.forEach(drawWebPage); // Capa 4: Origen
+
+            particles.forEach((p, i) => {
+                p.update();
+                p.draw();
+                if (p.alpha <= 0) particles.splice(i, 1);
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', init);
+        init();
+        animate();
+    </script>
+</body>
+</html>

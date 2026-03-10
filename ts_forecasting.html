@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Learning Time Series Forecasting</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #03060a; /* Ultra oscuro para contraste */
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+        }
+
+        #forecasting-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* El Canvas Principal de Datos (Toda la pantalla) */
+        #dataCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Panel de Referencia del Modelo (Esquina Superior Derecha) */
+        #model-panel {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            width: 25%;
+            height: 20%;
+            background: rgba(0, 209, 255, 0.05);
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 10;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 209, 255, 0.1);
+        }
+
+        #model-panel h4 { margin: 0; font-size: 0.8rem; color: #00d1ff; }
+        
+        #model-architecture-img {
+            width: 100%; 
+            height: 80%; 
+            margin-top: 10px; 
+            opacity: 0.8;
+            background-image: url("assets/LSTM.png");
+            background-repeat: no-repeat; 
+            background-position: center;
+            animation: pulseGlow 3s infinite ease-in-out;
+            background-position: center;
+            background-size: cover;
+        }
+
+        @keyframes pulseGlow {
+            0% { filter: drop-shadow(0 0 2px rgba(0, 209, 255, 0.2)); opacity: 0.6; }
+            50% { filter: drop-shadow(0 0 8px rgba(0, 209, 255, 0.6)); opacity: 0.9; }
+            100% { filter: drop-shadow(0 0 2px rgba(0, 209, 255, 0.2)); opacity: 0.6; }
+        }
+
+        /* Botón opcional para re-ejecutar simulación */
+        #forecast-button {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            z-index: 20;
+            padding: 12px 24px;
+            background: rgba(240, 165, 0, 0.1);
+            border: 2px solid #f0a500;
+            color: #f0a500;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+        #forecast-button:hover { background: rgba(240, 165, 0, 0.4); }
+
+        #metrics{
+            font-size: 0.75rem;
+            color: #aaa;
+            margin-top: 5px;
+            
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="forecasting-container">
+        <div id="model-panel">
+            <h4>LSTM ARCHITECTURE</h4>
+            <div id="model-architecture-img"></div>
+            <div id="metrics">
+                MSE: <span id="mse-val">0.0241</span> | Units: 64
+            </div>
+        </div>
+
+        <canvas id="dataCanvas"></canvas>
+
+        <button id="forecast-button">START NEW FORECAST</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('dataCanvas');
+        const ctx = canvas.getContext('2d');
+        const forecastButton = document.getElementById('forecast-button');
+
+        const equations = [
+            "fₜ = σ(W_f · [hₜ₋₁, xₜ] + b_f)",  // Forget Gate
+            "iₜ = σ(W_i · [hₜ₋₁, xₜ] + b_i)",  // Input Gate
+            "Cₜ = fₜ * Cₜ₋₁ + iₜ * C̃ₜ",        // Cell State Update
+            "MSE = 1/n ∑ (yᵢ - ŷᵢ)²",          // Mean Squared Error
+            "MAE = 1/n ∑ |yᵢ - ŷᵢ|",           // Mean Absolute Error
+            "ŷₜ₊ₕ = f(xₜ, xₜ₋₁, ..., xₜ₋ₚ)",   // Multi-step Forecasting
+            "ρ(k) = γ(k) / γ(0)",              // Autocorrelation Function
+            "xₜ = αxₜ₋₁ + εₜ",                 // AR(1) Process
+            "ŷ ∈ [y - 1.96σ, y + 1.96σ]"       // 95% Confidence Interval
+        ];
+
+        let mathParticles = [];
+
+        // Configuración de Datos
+        const N_HISTORICAL_POINTS = 300; // Puntos observados
+        const N_FORECAST_POINTS = 250;   // Puntos predichos
+        const ANIMATION_SPEED = 1;       // Puntos dibujados por frame
+
+        let historicalData = [];
+        let forecastData = [];
+        let confidenceIntervalData = [];
+        
+        let currentDrawIndex = 0;
+        let isSimulating = false;
+        
+        const mouse = { x: null, y: null, radius: 100 };
+        window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
+
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            generateData();
+            startSimulation();
+            initMath();
+        }
+
+        setInterval(triggerAutoForecast, 10000);
+
+        function initMath() {
+            mathParticles = [];
+            for (let i = 0; i < 12; i++) {
+                mathParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    text: equations[Math.floor(Math.random() * equations.length)],
+                    speed: 0.15 + Math.random() * 0.2,
+                    opacity: 0.05 + Math.random() * 0.15, // Muy sutil
+                    fontSize: 22 + Math.random() * 18
+                });
+            }
+        }
+
+        function drawMath() {
+            mathParticles.forEach(m => {
+                ctx.font = `italic ${m.fontSize}px 'Times New Roman'`;
+                ctx.fillStyle = `rgba(255, 255, 255, ${m.opacity})`;
+                ctx.fillText(m.text, m.x, m.y);
+                
+                // Movimiento descendente lento
+                m.y -= m.speed;
+                if (m.y > canvas.height + 50) {
+                    m.y = + 50;
+                    m.x = Math.random() * canvas.width;
+                }
+            });
+        }
+
+        // --- GENERACIÓN DE DATOS (Time Series Math) ---
+        function generateData() {
+            historicalData = [];
+            forecastData = [];
+            confidenceIntervalData = [];
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const centerY = h / 1.5;
+            
+            const totalPoints = N_HISTORICAL_POINTS + N_FORECAST_POINTS;
+            const spacingX = w / (totalPoints + 1);
+
+            // Parámetros de la serie: Tendencia, Ciclo y Ruido
+            const trend = 0.5;
+            const freq = 0.15;
+            const amplitude = 60;
+
+            // 1. Generar Historial (Input Data)
+            for (let i = 0; i < N_HISTORICAL_POINTS; i++) {
+                let x = spacingX * (i + 1);
+                let sine = Math.sin(i * freq);
+                let noise = (Math.random() - 0.5) * 60;
+                let y = centerY - (i * trend) - (sine * amplitude) + noise; // Tendencia alcista
+                
+                historicalData.push({ x, y });
+            }
+
+            // 2. Generar Predicción (Forecasting Extrapolado)
+            // Tomamos el último punto histórico como referencia
+            const lastHistory = historicalData[historicalData.length - 1];
+            
+            for (let i = 0; i < N_FORECAST_POINTS; i++) {
+                let idx = N_HISTORICAL_POINTS + i;
+                let x = spacingX * (idx + 1);
+                
+                // Extrapolar ciclo y tendencia
+                let sine = Math.sin(idx * freq);
+                let y = centerY - (idx * trend) - (sine * amplitude * 0.8); // Ciclo más suave
+                
+                // 3. Generar Intervalo de Confianza (Uncertainty)
+                // El error aumenta a medida que nos alejamos del presente
+                let uncertainty = 5 + (i * 1.5); // Aumenta linealmente
+                
+                forecastData.push({ x, y });
+                confidenceIntervalData.push({ x, upperBound: y - 0.45*uncertainty, lowerBound: y + 0.45*uncertainty });
+            }
+        }
+
+        // --- LÓGICA DE ANIMACIÓN ---
+        function startSimulation() {
+            if (isSimulating) return;
+            isSimulating = true;
+            currentDrawIndex = 0;
+            
+            forecastButton.innerText = "PROCESSING...";
+            forecastButton.style.color = "#f0a500";
+            forecastButton.style.borderColor = "#f0a500";
+
+            // Actualizar el valor de MSE aleatoriamente en cada inicio para realismo
+            const mseEl = document.getElementById('mse-val');
+            if (mseEl) {
+                mseEl.innerText = (0.01 + Math.random() * 0.01).toFixed(4);
+            }
+        }
+
+        function finalizeForecast() {
+            isSimulating = false;
+            forecastButton.innerText = "START NEW FORECAST";
+            forecastButton.style.color = "#00ff88"; // Verde neón
+            forecastButton.style.borderColor = "#00ff88";
+        }
+
+        function triggerAutoForecast() {
+            // Si ya está simulando, no hacemos nada para no solapar animaciones
+            if (isSimulating) return; 
+            
+            // Resetear el índice y generar nuevos datos para que no sea siempre igual
+            currentDrawIndex = 0;
+            generateData();
+            startSimulation();
+        }
+
+        // --- DIBUJO ---
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawMath();
+
+            // document.getElementById('mse-val').innerText = (0.02 + Math.random() * 0.005).toFixed(4);
+            // Dibujar cuadrícula de fondo (estilo pizarra científica)
+            ctx.strokeStyle = "rgba(200, 209, 255, 0)";
+            ctx.lineWidth = 1;
+            for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
+            for(let i=0; i<canvas.height; i+=50) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width, i); ctx.stroke(); }
+
+            // 1. DIBUJAR HISTORIAL (Cyan Line)
+            if (currentDrawIndex > 0) {
+                ctx.strokeStyle = "#00d1ff";
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "#00d1ff";
+                ctx.beginPath();
+                
+                // Dibujar hasta el índice actual
+                const drawLimit = Math.min(currentDrawIndex, N_HISTORICAL_POINTS);
+                ctx.moveTo(historicalData[0].x, historicalData[0].y);
+                for (let i = 1; i < drawLimit; i++) {
+                    ctx.lineTo(historicalData[i].x, historicalData[i].y);
+                }
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+
+            // 2. DIBUJAR PREDICCIÓN (Orange Line + Uncertainty)
+            if (currentDrawIndex >= N_HISTORICAL_POINTS) {
+                
+                // A. Zona de Incertidumbre (Uncertainty Band)
+                const forecastDrawIndex = currentDrawIndex - N_HISTORICAL_POINTS;
+                const forecastDrawLimit = Math.min(forecastDrawIndex, N_FORECAST_POINTS);
+
+                if (forecastDrawLimit > 1) {
+                    ctx.fillStyle = "rgba(240, 165, 0, 0.15)";
+                    ctx.beginPath();
+                    
+                    // Límite Superior (viaje de ida)
+                    ctx.moveTo(confidenceIntervalData[0].x, confidenceIntervalData[0].upperBound);
+                    for (let i = 1; i < forecastDrawLimit; i++) {
+                        ctx.lineTo(confidenceIntervalData[i].x, confidenceIntervalData[i].upperBound);
+                    }
+                    // Límite Inferior (viaje de vuelta)
+                    for (let i = forecastDrawLimit - 1; i >= 0; i--) {
+                        ctx.lineTo(confidenceIntervalData[i].x, confidenceIntervalData[i].lowerBound);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // B. Línea de Predicción (Orange Line)
+                if (forecastDrawLimit > 1) {
+                    ctx.strokeStyle = "#f0a500";
+                    ctx.lineWidth = 3;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = "#f0a500";
+                    ctx.beginPath();
+                    ctx.moveTo(forecastData[0].x, forecastData[0].y);
+                    for (let i = 1; i < forecastDrawLimit; i++) {
+                        ctx.lineTo(forecastData[i].x, forecastData[i].y);
+                    }
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            // 3. ACTUALIZAR ÍNDICE DE ANIMACIÓN
+            if (isSimulating) {
+                currentDrawIndex += ANIMATION_SPEED;
+                
+                const totalPoints = N_HISTORICAL_POINTS + N_FORECAST_POINTS;
+                if (currentDrawIndex >= totalPoints) {
+                    finalizeForecast();
+                }
+            }
+        }
+
+        function animate() {
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        forecastButton.addEventListener('click', () => {
+            finalizeForecast(); // Detener actual
+            generateData();   // Generar nuevos datos
+            startSimulation(); // Empezar
+        });
+        window.addEventListener('resize', init);
+        init();
+        animate();
+        initMath();
+    </script>
+</body>
+</html>

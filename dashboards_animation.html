@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Executive Data Dashboard Simulation</title>
+    <style>
+        body { margin: 0; background: #03060a; overflow: hidden; font-family: 'Courier New', monospace; color: #fff; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <canvas id="dashboardCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('dashboardCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Configuración de Colores y Estilo
+        const COLORS = {
+            cyan: "#00d1ff",
+            cyanDim: "rgba(0, 209, 255, 0.3)",
+            white: "#ffffff",
+            whiteDim: "rgba(255, 255, 255, 0.1)",
+            bg: "#03060a",
+            panelBg: "rgba(0, 209, 255, 0.03)",
+            panelBorder: "rgba(0, 209, 255, 0.15)"
+        };
+
+        // Estado de los Datos (Simulación)
+        let dataState = {
+            gauge: { value: 0, target: 75 },
+            bars: { values: [30, 50, 70, 40, 90, 60], targets: [30, 50, 70, 40, 90, 60] },
+            line: { values: [], targets: [] },
+            heatmap: { matrix: [] }
+        };
+
+        // Inicialización de datos históricos y matriz
+        for (let i = 0; i < 20; i++) {
+            dataState.line.values.push(50 + Math.random() * 30);
+            dataState.line.targets.push(50 + Math.random() * 30);
+        }
+        for (let i = 0; i < 4; i++) {
+            let row = [];
+            for (let j = 0; j < 8; j++) row.push(Math.random());
+            dataState.heatmap.matrix.push(row);
+        }
+
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        // --- FUNCIONES DE DIBUJO DE PANELES ---
+
+        // 1. Marco del Panel (Contenedor UI)
+        function drawPanel(x, y, w, h, title) {
+            ctx.fillStyle = COLORS.panelBg;
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = COLORS.panelBorder;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, w, h);
+
+            // Título del Panel
+            ctx.fillStyle = COLORS.cyan;
+            ctx.font = "11px 'Courier New', monospace";
+            ctx.fillText(title.toUpperCase(), x + 10, y + 15);
+            
+            // Línea decorativa bajo el título
+            ctx.beginPath();
+            ctx.moveTo(x + 10, y + 20);
+            ctx.lineTo(x + w - 10, y + 20);
+            ctx.stroke();
+        }
+
+        // 2. Gráfico de Medidor (Gauge)
+        function drawGaugeWidget(x, y, w, h, value) {
+            const centerX = x + w / 2;
+            const centerY = y + h * 0.65;
+            const radius = Math.min(w, h) * 0.35;
+
+            // Arco de fondo
+            ctx.strokeStyle = COLORS.panelBorder;
+            ctx.lineWidth = 10;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, Math.PI, Math.PI * 2, false);
+            ctx.stroke();
+
+            // Arco de valor (Glow)
+            ctx.strokeStyle = COLORS.cyan;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = COLORS.cyan;
+            ctx.beginPath();
+            const endAngle = Math.PI + (Math.PI * value / 100);
+            ctx.arc(centerX, centerY, radius, Math.PI, endAngle, false);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Aguja y Valor Central
+            ctx.fillStyle = COLORS.white;
+            ctx.font = "24px 'Courier New', monospace";
+            ctx.fillText(`${Math.round(value)}%`, centerX - 25, centerY - 10);
+        }
+
+        // 3. Gráfico de Líneas Histórico (Line Chart)
+        function drawLineChartWidget(x, y, w, h, data) {
+            const padding = 30;
+            const chartW = w - padding * 2;
+            const chartH = h - padding * 2;
+            const startX = x + padding;
+            const startY = y + h - padding;
+
+            // Ejes Sutiles
+            ctx.strokeStyle = COLORS.whiteDim;
+            ctx.beginPath(); ctx.moveTo(startX, y + padding); ctx.lineTo(startX, startY); ctx.lineTo(x + w - padding, startY); ctx.stroke();
+
+            // Dibujar Línea
+            ctx.strokeStyle = COLORS.cyan;
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 10; ctx.shadowColor = COLORS.cyan;
+            ctx.beginPath();
+            const spacingX = chartW / (data.length - 1);
+            ctx.moveTo(startX, startY - (data[0] / 100 * chartH));
+            for (let i = 1; i < data.length; i++) {
+                ctx.lineTo(startX + i * spacingX, startY - (data[i] / 100 * chartH));
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        // 4. Mapa de Calor (Heatmap / Matrix View)
+        function drawHeatmapWidget(x, y, w, h, matrix) {
+            const rows = matrix.length;
+            const cols = matrix[0].length;
+            const padding = 30;
+            const cellW = (w - padding * 2) / cols;
+            const cellH = (h - padding * 3) / rows; // Espacio extra para labels
+
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const val = matrix[i][j];
+                    ctx.fillStyle = `rgba(0, 209, 255, ${val * 0.8})`; // Opacidad según valor
+                    ctx.fillRect(x + padding + j * cellW, y + padding + i * cellH, cellW - 2, cellH - 2);
+                }
+            }
+        }
+
+        // 5. Pequeños Indicadores (Sparklines / Mini-charts)
+        function drawSparklineWidget(x, y, w, h, title, value) {
+            ctx.fillStyle = COLORS.white;
+            ctx.font = "16px 'Courier New', monospace";
+            ctx.fillText(value.toFixed(2), x + 10, y + h / 2 + 5);
+            
+            ctx.fillStyle = COLORS.cyan;
+            ctx.font = "10px 'Courier New', monospace";
+            ctx.fillText(title, x + 10, y + h / 2 + 18);
+        }
+
+        // --- LOOP PRINCIPAL ---
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Actualizar valores con suavidad (Lerp)
+            dataState.gauge.value += (dataState.gauge.target - dataState.gauge.value) * 0.05;
+            dataState.line.values = dataState.line.values.map((v, i) => v + (dataState.line.targets[i] - v) * 0.02);
+
+            // Definir Retícula (Grid)
+            const margin = 20;
+            const col1W = canvas.width * 0.3;
+            const col2W = canvas.width * 0.7 - margin * 3;
+            const rowH = (canvas.height - margin * 4) / 3;
+
+            // --- COLUMNA 1 (Izquierda) ---
+            
+            // Panel 1: Main KPI (Gauge)
+            const p1X = margin, p1Y = margin, p1W = col1W, p1H = rowH * 1.5;
+            drawPanel(p1X, p1Y, p1W, p1H, "System Health / Efficiency");
+            drawGaugeWidget(p1X, p1Y, p1W, p1H, dataState.gauge.value);
+
+            // Panel 2: Mini Métricas
+            const p2Y = p1Y + p1H + margin, p2H = rowH * 0.5;
+            drawPanel(p1X, p2Y, p1W, p2H, "Model Inferences");
+            drawSparklineWidget(p1X, p2Y, p1W, p2H, "Avg. Latency (ms)", 1.24 + Math.random() * 0.1);
+
+            // Panel 3: Status Logs
+            const p3Y = p2Y + p2H + margin, p3H = rowH;
+            drawPanel(p1X, p3Y, p1W, p3H, "Live Data Stream");
+            ctx.font = "10px 'Courier New', monospace"; ctx.fillStyle = "rgba(255,255,255,0.4)";
+            ctx.fillText(`> REFRESHING KPIs... ${new Date().toLocaleTimeString()}`, p1X + 15, p3Y + 40);
+            ctx.fillText(`> DB_CONN: OK`, p1X + 15, p3Y + 55);
+            ctx.fillText(`> ACTIVE_USERS: 1,204`, p1X + 15, p3Y + 70);
+
+            // --- COLUMNA 2 (Derecha) ---
+
+            // Panel 4: Historial (Line Chart)
+            const p4X = p1X + col1W + margin, p4Y = margin, p4W = col2W, p4H = rowH * 1.5;
+            drawPanel(p4X, p4Y, p4W, p4H, "Historical Performance Trend (24h)");
+            drawLineChartWidget(p4X, p4Y, p4W, p4H, dataState.line.values);
+
+            // Panel 5: Matriz (Heatmap)
+            const p5Y = p4Y + p4H + margin, p5H = rowH * 1.5;
+            drawPanel(p4X, p5Y, p4W, p5H, "Anomaly Detection Matrix / Correlation");
+            drawHeatmapWidget(p4X, p5Y, p4W, p5H, dataState.heatmap.matrix);
+
+            requestAnimationFrame(animate);
+        }
+
+        // --- AUTOMATIZACIÓN DE DATOS (Cada 5s) ---
+        setInterval(() => {
+            // Actualizar Gauge
+            dataState.gauge.target = 40 + Math.random() * 50;
+            // Actualizar Línea Histórica (Desplazar y añadir nuevo)
+            dataState.line.targets.shift();
+            dataState.line.targets.push(50 + Math.random() * 30);
+            // Actualizar Heatmap
+            dataState.heatmap.matrix = dataState.heatmap.matrix.map(row => row.map(() => Math.random()));
+        }, 5000);
+
+        window.addEventListener('resize', init);
+        init();
+        animate();
+    </script>
+</body>
+</html>

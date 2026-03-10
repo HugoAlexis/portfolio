@@ -1,3 +1,57 @@
+const contentData = {
+    ml: {
+        text: "I build high-impact Predictive Models and Intelligent Systems that turn data into a competitive advantage. From Anomaly Detection for risk mitigation to advanced Clustering for customer segmentation and seamless integration with modern LLMs, I deliver end-to-end AI solutions that automate complex tasks and enhance decision-making.",
+        url: "nn.html"
+    },
+    scraping: {
+        text: "Stop manual data entry and start scaling. I develop high-performance automated pipelines to extract massive datasets from any web source, providing you with clean, structured, and ready-to-use intelligence for market analysis.",
+        url: "scraping_animation.html" 
+    },
+    forecasting: {
+        text: "Anticipate changes and prevent downtime with AI-driven analytics. I implement advanced forecasting systems to predict market trends, demand fluctuations, and equipment health. By analyzing multi-sensor data, I deliver high-accuracy Remaining Useful Life (RUL) estimations, allowing you to transition from reactive to predictive maintenance and optimize resource allocation.",
+        url: "ts_forecasting.html" 
+    },
+    dashboards: {
+        text: "I bridge the gap between complex data and strategic action. I design high-impact Interactive Dashboards that centralize your KPIs in real-time. Whether it's monitoring ML model performance or visualizing large-scale scraped datasets, I provide the intuitive tools you need to make data-driven decisions at a glance.",
+        url: "dashboards_animation.html" 
+    }
+};
+
+function updateHero(service, e) {
+    const description = document.getElementById('hero-description');
+    const iframe = document.getElementById('hero-iframe');
+    
+    if (!description || !iframe) return;
+
+    // 1. Aplicar clase de salida (Fade Out)
+    description.classList.add('fade-out');
+    iframe.classList.add('fade-out');
+
+    setTimeout(() => {
+        // 2. Cambiar contenido mientras es invisible
+        description.innerText = contentData[service].text;
+        iframe.src = contentData[service].url;
+
+        // 3. Quitar clase de salida (Fade In)
+        description.classList.remove('fade-out');
+        iframe.classList.remove('fade-out');
+    }, 500); // Tiempo que dura el desvanecimiento
+
+    // 4. Manejo de pestañas activas
+    document.querySelectorAll('.service-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    if (e && e.target) {
+        e.target.classList.add('active');
+    }
+}
+
+// Opcional: Cargar el primero por defecto al abrir la página
+window.onload = () => {
+    updateHero('ml');
+};
+
 document.addEventListener("DOMContentLoaded", () => {
 
     // ==========================================
